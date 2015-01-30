@@ -18,6 +18,27 @@ namespace pyston {
 
 // capi stuff
 
+// XXX Move this allocator to a separate wrapper module.
+
+// XXX TODO make my methods also noexcept
+
+/* We allocate one more byte to make sure the string is
+   Ux0000 terminated; some code relies on that.
+
+   XXX This allocator could further be enhanced by assuring that the
+   free list never reduces its size below 1.
+
+*/
+
+extern "C" PyUnicodeObject *_PyUnicode_New(Py_ssize_t length) {
+    return new BoxedUnicode(std::basic_string<Py_UNICODE>(length, '\x0000'));
+}
+
+extern "C" int _PyUnicode_Resize(PyUnicodeObject **unicode, Py_ssize_t length) {
+    // Py_FatalError("unimplemented");
+    return 0;  // XXX do nothing for now!
+}
+
 static std::string unicode_default_encoding = "ascii";
 extern "C" const char* PyUnicode_GetDefaultEncoding(void) noexcept {
     return unicode_default_encoding.c_str();
@@ -32,17 +53,17 @@ extern "C" int PyUnicode_ClearFreeList() noexcept {
     Py_FatalError("unimplemented");
 }
 
-extern "C" PyObject* PyUnicode_FromUnicode(const Py_UNICODE* u, Py_ssize_t size) noexcept {
-    Py_FatalError("unimplemented");
-}
+// extern "C" PyObject* PyUnicode_FromUnicode(const Py_UNICODE* u, Py_ssize_t size) noexcept {
+//     Py_FatalError("unimplemented");
+// }
 
-extern "C" PyObject* PyUnicode_FromStringAndSize(const char* u, Py_ssize_t size) noexcept {
-    Py_FatalError("unimplemented");
-}
+// extern "C" PyObject* PyUnicode_FromStringAndSize(const char* u, Py_ssize_t size) noexcept {
+//     Py_FatalError("unimplemented");
+// }
 
-extern "C" PyObject* PyUnicode_FromString(const char* u) noexcept {
-    Py_FatalError("unimplemented");
-}
+// extern "C" PyObject* PyUnicode_FromString(const char* u) noexcept {
+//     Py_FatalError("unimplemented");
+// }
 
 extern "C" PyObject* PyUnicode_FromFormat(const char* format, ...) noexcept {
     Py_FatalError("unimplemented");
@@ -372,28 +393,6 @@ extern "C" Py_UNICODE _PyUnicode_ToTitlecase(Py_UNICODE ch) noexcept {
 extern "C" Py_UNICODE _PyUnicode_ToUppercase(Py_UNICODE ch) noexcept {
     Py_FatalError("unimplemented");
 }
-
-// From CPython, unicodeobject.c
-// Used by Py_UNICODE_ISSPACE in unicodeobject.h
-/* Fast detection of the most frequent whitespace characters */
-extern "C" const unsigned char _Py_ascii_whitespace[]
-    = { 0, 0, 0, 0, 0, 0, 0, 0,
-        /*     case 0x0009: * CHARACTER TABULATION */
-        /*     case 0x000A: * LINE FEED */
-        /*     case 0x000B: * LINE TABULATION */
-        /*     case 0x000C: * FORM FEED */
-        /*     case 0x000D: * CARRIAGE RETURN */
-        0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        /*     case 0x001C: * FILE SEPARATOR */
-        /*     case 0x001D: * GROUP SEPARATOR */
-        /*     case 0x001E: * RECORD SEPARATOR */
-        /*     case 0x001F: * UNIT SEPARATOR */
-        0, 0, 0, 0, 1, 1, 1, 1,
-        /*     case 0x0020: * SPACE */
-        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
 
 void setupUnicode() {
     unicode_cls->freeze();

@@ -1,4 +1,6 @@
-#if 0
+/* XXX This should not be here ... */
+#define LONG_BIT 64
+
 /*
 
 Unicode implementation based on original code by Fredrik Lundh,
@@ -46,11 +48,11 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "unicodeobject.h"
 #include "ucnhash.h"
 
+#include "capi/unicodewrapper.h"
+
 #ifdef MS_WINDOWS
 #include <windows.h>
 #endif
-
-/* Limit for the Unicode object free list */
 
 #define PyUnicode_MAXFREELIST       1024
 
@@ -257,6 +259,7 @@ Py_LOCAL_INLINE(int) unicode_member(Py_UNICODE chr, Py_UNICODE* set, Py_ssize_t 
 
 /* --- Unicode Object ----------------------------------------------------- */
 
+#if 0
 static
 int unicode_resize(register PyUnicodeObject *unicode,
                    Py_ssize_t length)
@@ -305,6 +308,7 @@ int unicode_resize(register PyUnicodeObject *unicode,
 
     return 0;
 }
+#endif
 
 /* We allocate one more byte to make sure the string is
    Ux0000 terminated; some code relies on that.
@@ -314,6 +318,7 @@ int unicode_resize(register PyUnicodeObject *unicode,
 
 */
 
+#if 0
 static
 PyUnicodeObject *_PyUnicode_New(Py_ssize_t length)
 {
@@ -384,7 +389,9 @@ PyUnicodeObject *_PyUnicode_New(Py_ssize_t length)
     PyObject_Del(unicode);
     return NULL;
 }
+#endif
 
+#if 0
 static
 void unicode_dealloc(register PyUnicodeObject *unicode)
 {
@@ -446,6 +453,7 @@ int _PyUnicode_Resize(PyUnicodeObject **unicode, Py_ssize_t length)
        objects, since we can modify them in-place. */
     return unicode_resize(v, length);
 }
+#endif
 
 int PyUnicode_Resize(PyObject **unicode, Py_ssize_t length)
 {
@@ -473,7 +481,8 @@ PyObject *PyUnicode_FromUnicode(const Py_UNICODE *u,
                 unicode = _PyUnicode_New(1);
                 if (!unicode)
                     return NULL;
-                unicode->str[0] = *u;
+                unicodeSetChr(unicode, 0, *u);
+                /* unicode->str[0] = *u; */
                 unicode_latin1[*u] = unicode;
             }
             Py_INCREF(unicode);
@@ -487,7 +496,7 @@ PyObject *PyUnicode_FromUnicode(const Py_UNICODE *u,
 
     /* Copy the Unicode data into the new object */
     if (u != NULL)
-        Py_UNICODE_COPY(unicode->str, u, size);
+        Py_UNICODE_COPY(unicode, u, size);
 
     return (PyObject *)unicode;
 }
@@ -520,7 +529,7 @@ PyObject *PyUnicode_FromStringAndSize(const char *u, Py_ssize_t size)
                 unicode = _PyUnicode_New(1);
                 if (!unicode)
                     return NULL;
-                unicode->str[0] = Py_CHARMASK(*u);
+                unicodeSetChr(unicode, 0, Py_CHARMASK(*u));  /* unicode->str[0] = Py_CHARMASK(*u); */
                 unicode_latin1[Py_CHARMASK(*u)] = unicode;
             }
             Py_INCREF(unicode);
@@ -547,7 +556,7 @@ PyObject *PyUnicode_FromString(const char *u)
 
     return PyUnicode_FromStringAndSize(u, size);
 }
-
+#if 0
 /* _Py_UNICODE_NEXT is a private macro used to retrieve the character pointed
  * by 'ptr', possibly combining surrogate pairs on narrow builds.
  * 'ptr' and 'end' must be Py_UNICODE*, with 'ptr' pointing at the character
@@ -1910,6 +1919,7 @@ encode_char:
 #undef DECODE_DIRECT
 #undef ENCODE_DIRECT
 
+#endif // if 0
 /* --- UTF-8 Codec -------------------------------------------------------- */
 
 static
@@ -1971,7 +1981,7 @@ PyObject *PyUnicode_DecodeUTF8Stateful(const char *s,
     }
 
     /* Unpack UTF-8 encoded data */
-    p = unicode->str;
+    p = unicodeGetWritableStr(unicode); /* unicode->str; */
     e = s + size;
 
     while (s < e) {
@@ -2096,18 +2106,19 @@ PyObject *PyUnicode_DecodeUTF8Stateful(const char *s,
 
       utf8Error:
         outpos = p-PyUnicode_AS_UNICODE(unicode);
-        if (unicode_decode_call_errorhandler(
-                errors, &errorHandler,
-                "utf8", errmsg,
-                starts, size, &startinpos, &endinpos, &exc, &s,
-                &unicode, &outpos, &p))
-            goto onError;
+        /* XXX Pyston change: how should we deal with errors? */
+        /* if (unicode_decode_call_errorhandler( */
+        /*         errors, &errorHandler, */
+        /*         "utf8", errmsg, */
+        /*         starts, size, &startinpos, &endinpos, &exc, &s, */
+        /*         &unicode, &outpos, &p)) */
+        /*     goto onError; */
     }
     if (consumed)
         *consumed = s-starts;
 
     /* Adjust length */
-    if (_PyUnicode_Resize(&unicode, p - unicode->str) < 0)
+    if (_PyUnicode_Resize(&unicode, p - unicodeGetWritableStr(unicode)) < 0)
         goto onError;
 
     Py_XDECREF(errorHandler);
@@ -2120,6 +2131,9 @@ PyObject *PyUnicode_DecodeUTF8Stateful(const char *s,
     Py_DECREF(unicode);
     return NULL;
 }
+
+#if 0
+
 
 /* Allocation strategy:  if the string is short, convert into a stack buffer
    and allocate exactly as much space needed at the end.  Else allocate the

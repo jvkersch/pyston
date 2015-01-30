@@ -392,8 +392,10 @@ typedef PY_UNICODE_TYPE Py_UNICODE;
     Py_UNICODE_ISDIGIT(ch) || \
     Py_UNICODE_ISNUMERIC(ch))
 
-#define Py_UNICODE_COPY(target, source, length)                         \
-    Py_MEMCPY((target), (source), (length)*sizeof(Py_UNICODE))
+/* Pyston change: this is now a function (see below). */
+
+/* #define Py_UNICODE_COPY(target, source, length)                         \ */
+/*     Py_MEMCPY((target), (source), (length)*sizeof(Py_UNICODE)) */
 
 #define Py_UNICODE_FILL(target, value, length) \
     do {Py_ssize_t i_; Py_UNICODE *t_ = (target); Py_UNICODE v_ = (value);\
@@ -426,8 +428,18 @@ typedef struct {
                                    implementing the buffer protocol */
 } PyUnicodeObject;
 #endif
-struct _PyUnicodeObject;
-typedef struct _PyUnicodeObject PyUnicodeObject;
+
+#ifndef __cplusplus
+typedef PyObject PyUnicodeObject;
+#else
+namespace pyston {
+    class BoxedUnicode;
+}
+typedef pyston::BoxedUnicode PyUnicodeObject;
+#endif
+
+PyAPI_FUNC(void) Py_UNICODE_COPY(PyUnicodeObject* target, const Py_UNICODE* source, int length);
+
 
 // Pyston change: this is no longer a static object
 PyAPI_DATA(PyTypeObject*) unicode_cls;
