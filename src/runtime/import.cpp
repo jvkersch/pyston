@@ -154,6 +154,8 @@ static Box* importSub(const std::string& name, const std::string& full_name, Box
         return importTestExtension("descr_test");
     if (name == "slots_test")
         return importTestExtension("slots_test");
+    if (name == "unicode_test")
+        return importTestExtension("unicode_test");
 
     return NULL;
 }

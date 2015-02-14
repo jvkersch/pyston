@@ -394,8 +394,8 @@ typedef PY_UNICODE_TYPE Py_UNICODE;
 
 /* Pyston change: this is now a function (see below). */
 
-/* #define Py_UNICODE_COPY(target, source, length)                         \ */
-/*     Py_MEMCPY((target), (source), (length)*sizeof(Py_UNICODE)) */
+#define Py_UNICODE_COPY(target, source, length)                         \
+    Py_MEMCPY((target), (source), (length)*sizeof(Py_UNICODE))
 
 #define Py_UNICODE_FILL(target, value, length) \
     do {Py_ssize_t i_; Py_UNICODE *t_ = (target); Py_UNICODE v_ = (value);\
@@ -405,10 +405,12 @@ typedef PY_UNICODE_TYPE Py_UNICODE;
 /* Check if substring matches at given offset.  the offset must be
    valid, and the substring must not be empty */
 
-#define Py_UNICODE_MATCH(string, offset, substring) \
-    ((*((string)->str + (offset)) == *((substring)->str)) && \
-    ((*((string)->str + (offset) + (substring)->length-1) == *((substring)->str + (substring)->length-1))) && \
-     !memcmp((string)->str + (offset), (substring)->str, (substring)->length*sizeof(Py_UNICODE)))
+/* Pyston change: this is now a function. */
+
+/* #define Py_UNICODE_MATCH(string, offset, substring) \ */
+/*     ((*((string)->str + (offset)) == *((substring)->str)) && \ */
+/*     ((*((string)->str + (offset) + (substring)->length-1) == *((substring)->str + (substring)->length-1))) && \ */
+/*      !memcmp((string)->str + (offset), (substring)->str, (substring)->length*sizeof(Py_UNICODE))) */
 
 #ifdef __cplusplus
 extern "C" {
@@ -438,8 +440,7 @@ namespace pyston {
 typedef pyston::BoxedUnicode PyUnicodeObject;
 #endif
 
-PyAPI_FUNC(void) Py_UNICODE_COPY(PyUnicodeObject* target, const Py_UNICODE* source, int length);
-
+/* PyAPI_FUNC(void) Py_UNICODE_COPY(PyUnicodeObject* target, const Py_UNICODE* source, int length); */
 
 // Pyston change: this is no longer a static object
 PyAPI_DATA(PyTypeObject*) unicode_cls;

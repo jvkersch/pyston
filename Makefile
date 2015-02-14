@@ -976,7 +976,7 @@ bench_exceptions:
 	zsh -c 'ulimit -v $(MAX_MEM_KB); ulimit -d $(MAX_MEM_KB); time ./bench_exceptions'
 	rm bench_exceptions
 
-TEST_EXT_MODULE_NAMES := basic_test descr_test slots_test
+TEST_EXT_MODULE_NAMES := basic_test descr_test slots_test unicode_test
 
 .PHONY: ext_pyston
 ext_pyston: $(TEST_EXT_MODULE_NAMES:%=$(TEST_DIR)/test_extension/%.pyston.so)
