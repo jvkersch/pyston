@@ -356,14 +356,16 @@ public:
 };
 
 typedef std::basic_string<Py_UNICODE> unicode_string;
+
 class BoxedUnicode : public Box {
-    // TODO implementation
 public:
     unicode_string str;
 
-    BoxedUnicode(const Py_UNICODE* s, size_t n) __attribute__((visibility("default"))) : Box(unicode_cls), str(s, n) {}
-    BoxedUnicode(const unicode_string&& s) __attribute__((visibility("default"))) : Box(unicode_cls), str(std::move(s)) {}
-    BoxedUnicode(const unicode_string& s) __attribute__((visibility("default"))) : Box(unicode_cls), str(s) {}
+    BoxedUnicode(const Py_UNICODE* s, size_t n) __attribute__((visibility("default")));
+    BoxedUnicode(unicode_string&& s) __attribute__((visibility("default")));
+    BoxedUnicode(const unicode_string& s) __attribute__((visibility("default")));
+
+    DEFAULT_CLASS(unicode_cls);
 };
 
 class BoxedInstanceMethod : public Box {

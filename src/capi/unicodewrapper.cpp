@@ -29,13 +29,7 @@ extern "C" int Py_UNICODE_MATCH(PyUnicodeObject *string, Py_ssize_t offset, PyUn
 }
 
 // Stub implementation to continue with compiling unicodeobject.c --- XXX replace this afterwards.
-extern "C" void * PyObject_Malloc(size_t)
-{
-    Py_FatalError("unimplemented");
-}
-
-// Stub implementation
-extern "C" int PyErr_BadArgument()
+extern "C" void * PyObject_Malloc(size_t) noexcept
 {
     Py_FatalError("unimplemented");
 }

@@ -12,9 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "gc/collector.h"
 #include "runtime/types.h"
 
 namespace pyston {
+
+BoxedUnicode::BoxedUnicode(const Py_UNICODE* s, size_t n) : str(s, n) {
+    gc::registerGCManagedBytes(this->str.size());
+}
+
+BoxedUnicode::BoxedUnicode(unicode_string&& s) : str(std::move(s)) {
+    gc::registerGCManagedBytes(this->str.size());
+}
+
+BoxedUnicode::BoxedUnicode(const unicode_string& s) : str(s) {
+    gc::registerGCManagedBytes(this->str.size());
+}
 
 // capi stuff
 
@@ -53,44 +66,11 @@ extern "C" int PyUnicode_ClearFreeList() noexcept {
     Py_FatalError("unimplemented");
 }
 
-extern "C" PyObject* PyUnicode_FromFormat(const char* format, ...) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_FromFormatV(const char* format, va_list vargs) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" Py_UNICODE* PyUnicode_AsUnicode(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" Py_ssize_t PyUnicode_GetSize(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
 extern "C" PyObject* PyUnicode_FromEncodedObject(PyObject* obj, const char* encoding, const char* errors) noexcept {
     Py_FatalError("unimplemented");
 }
 
-extern "C" PyObject* PyUnicode_FromObject(PyObject* obj) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_FromWideChar(const wchar_t* w, Py_ssize_t size) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" Py_ssize_t PyUnicode_AsWideChar(PyUnicodeObject* unicode, wchar_t* w, Py_ssize_t size) noexcept {
-    Py_FatalError("unimplemented");
-}
-
 extern "C" PyObject* PyUnicode_Decode(const char* s, Py_ssize_t size, const char* encoding,
-                                      const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_Encode(const Py_UNICODE* s, Py_ssize_t size, const char* encoding,
                                       const char* errors) noexcept {
     Py_FatalError("unimplemented");
 }
@@ -100,142 +80,6 @@ extern "C" PyObject* PyUnicode_AsEncodedObject(PyObject* unicode, const char* en
 }
 
 extern "C" PyObject* PyUnicode_AsEncodedString(PyObject* unicode, const char* encoding, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF8(const char* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF8Stateful(const char* s, Py_ssize_t size, const char* errors,
-                                                  Py_ssize_t* consumed) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeUTF8(const Py_UNICODE* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsUTF8String(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF32(const char* s, Py_ssize_t size, const char* errors,
-                                           int* byteorder) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF32Stateful(const char* s, Py_ssize_t size, const char* errors, int* byteorder,
-                                                   Py_ssize_t* consumed) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeUTF32(const Py_UNICODE* s, Py_ssize_t size, const char* errors,
-                                           int byteorder) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsUTF32String(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF16(const char* s, Py_ssize_t size, const char* errors,
-                                           int* byteorder) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF16Stateful(const char* s, Py_ssize_t size, const char* errors, int* byteorder,
-                                                   Py_ssize_t* consumed) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeUTF16(const Py_UNICODE* s, Py_ssize_t size, const char* errors,
-                                           int byteorder) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsUTF16String(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF7(const char* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUTF7Stateful(const char* s, Py_ssize_t size, const char* errors,
-                                                  Py_ssize_t* consumed) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeUTF7(const Py_UNICODE* s, Py_ssize_t size, int base64SetO, int base64WhiteSpace,
-                                          const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeUnicodeEscape(const char* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeUnicodeEscape(const Py_UNICODE* s, Py_ssize_t size) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsUnicodeEscapeString(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeRawUnicodeEscape(const char* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeRawUnicodeEscape(const Py_UNICODE* s, Py_ssize_t size) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsRawUnicodeEscapeString(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeLatin1(const char* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeLatin1(const Py_UNICODE* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsLatin1String(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeASCII(const char* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeASCII(const Py_UNICODE* s, Py_ssize_t size, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsASCIIString(PyObject* unicode) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_DecodeCharmap(const char* s, Py_ssize_t size, PyObject* mapping,
-                                             const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_EncodeCharmap(const Py_UNICODE* s, Py_ssize_t size, PyObject* mapping,
-                                             const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_AsCharmapString(PyObject* unicode, PyObject* mapping) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_TranslateCharmap(const Py_UNICODE* s, Py_ssize_t size, PyObject* table,
-                                                const char* errors) noexcept {
     Py_FatalError("unimplemented");
 }
 
@@ -255,58 +99,11 @@ extern "C" PyObject* PyUnicode_AsMBCSString(PyObject* unicode) noexcept {
     Py_FatalError("unimplemented");
 }
 
-extern "C" PyObject* PyUnicode_Concat(PyObject* left, PyObject* right) noexcept {
-    Py_FatalError("unimplemented");
-}
-
 extern "C" PyObject* PyUnicode_Split(PyObject* s, PyObject* sep, Py_ssize_t maxsplit) noexcept {
     Py_FatalError("unimplemented");
 }
 
-extern "C" PyObject* PyUnicode_Splitlines(PyObject* s, int keepend) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_Translate(PyObject* str, PyObject* table, const char* errors) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_Join(PyObject* separator, PyObject* seq) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" Py_ssize_t PyUnicode_Tailmatch(PyObject* str, PyObject* substr, Py_ssize_t start, Py_ssize_t end,
-                                          int direction) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" Py_ssize_t PyUnicode_Find(PyObject* str, PyObject* substr, Py_ssize_t start, Py_ssize_t end,
-                                     int direction) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" Py_ssize_t PyUnicode_Count(PyObject* str, PyObject* substr, Py_ssize_t start, Py_ssize_t end) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_Replace(PyObject* str, PyObject* substr, PyObject* replstr,
-                                       Py_ssize_t maxcount) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" int PyUnicode_Compare(PyObject* left, PyObject* right) noexcept {
-    Py_FatalError("unimplemented");
-}
-
 extern "C" PyObject* PyUnicode_RichCompare(PyObject* left, PyObject* right, int op) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" PyObject* PyUnicode_Format(PyObject* format, PyObject* args) noexcept {
-    Py_FatalError("unimplemented");
-}
-
-extern "C" int PyUnicode_Contains(PyObject* container, PyObject* element) noexcept {
     Py_FatalError("unimplemented");
 }
 
@@ -391,7 +188,7 @@ extern "C" Py_UNICODE _PyUnicode_ToUppercase(Py_UNICODE ch) noexcept {
 
 extern "C" PyObject * _PyUnicode_FormatAdvanced(PyObject *obj,
                                                 Py_UNICODE *format_spec,
-                                                Py_ssize_t format_spec_len) {
+                                                Py_ssize_t format_spec_len) noexcept {
     Py_FatalError("unimplemented");
 }
 
