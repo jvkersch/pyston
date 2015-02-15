@@ -5943,41 +5943,41 @@ PyObject *replace(PyUnicodeObject *self,
             Py_UNICODE u1, u2;
             if (!findchar(unicodeGetWritableStr(self), unicodeGetStrLen(self), unicodeGetWritableStr(str1)[0]))
                 goto nothing;
-            u = (PyUnicodeObject*) PyUnicode_FromUnicode(NULL, self->length);
+            u = (PyUnicodeObject*) PyUnicode_FromUnicode(NULL, unicodeGetStrLen(self));
             if (!u)
                 return NULL;
-            Py_UNICODE_COPY(u->str, self->str, self->length);
-            u1 = str1->str[0];
-            u2 = str2->str[0];
-            for (i = 0; i < u->length; i++)
-                if (u->str[i] == u1) {
+            Py_UNICODE_COPY(unicodeGetWritableStr(u), unicodeGetWritableStr(self), unicodeGetStrLen(self));
+            u1 = unicodeGetWritableStr(str1)[0];
+            u2 = unicodeGetWritableStr(str2)[0];
+            for (i = 0; i < unicodeGetStrLen(u); i++)
+                if (unicodeGetWritableStr(u)[i] == u1) {
                     if (--maxcount < 0)
                         break;
-                    u->str[i] = u2;
+                    unicodeGetWritableStr(u)[i] = u2;
                 }
         } else {
             i = stringlib_find(
-                self->str, self->length, str1->str, str1->length, 0
+                unicodeGetWritableStr(self), unicodeGetStrLen(self), unicodeGetWritableStr(str1), unicodeGetStrLen(str1), 0
                 );
             if (i < 0)
                 goto nothing;
-            u = (PyUnicodeObject*) PyUnicode_FromUnicode(NULL, self->length);
+            u = (PyUnicodeObject*) PyUnicode_FromUnicode(NULL, unicodeGetStrLen(self));
             if (!u)
                 return NULL;
-            Py_UNICODE_COPY(u->str, self->str, self->length);
+            Py_UNICODE_COPY(unicodeGetWritableStr(u), unicodeGetWritableStr(self), unicodeGetStrLen(self));
 
             /* change everything in-place, starting with this one */
-            Py_UNICODE_COPY(u->str+i, str2->str, str2->length);
-            i += str1->length;
+            Py_UNICODE_COPY(unicodeGetWritableStr(u)+i, unicodeGetWritableStr(str2), unicodeGetStrLen(str2));
+            i += unicodeGetStrLen(str1);
 
             while ( --maxcount > 0) {
-                i = stringlib_find(self->str+i, self->length-i,
-                                   str1->str, str1->length,
+                i = stringlib_find(unicodeGetWritableStr(self)+i, unicodeGetStrLen(self)-i,
+                                   unicodeGetWritableStr(str1), unicodeGetStrLen(str1),
                                    i);
                 if (i == -1)
                     break;
-                Py_UNICODE_COPY(u->str+i, str2->str, str2->length);
-                i += str1->length;
+                Py_UNICODE_COPY(unicodeGetWritableStr(u)+i, unicodeGetWritableStr(str2), unicodeGetStrLen(str2));
+                i += unicodeGetStrLen(str1);
             }
         }
     } else {
@@ -5987,22 +5987,22 @@ PyObject *replace(PyUnicodeObject *self,
         Py_UNICODE *p;
 
         /* replace strings */
-        n = stringlib_count(self->str, self->length, str1->str, str1->length,
+        n = stringlib_count(unicodeGetWritableStr(self), unicodeGetStrLen(self), unicodeGetWritableStr(str1), unicodeGetStrLen(str1),
                             maxcount);
         if (n == 0)
             goto nothing;
         /* new_size = self->length + n * (str2->length - str1->length)); */
-        delta = (str2->length - str1->length);
+        delta = (unicodeGetStrLen(str2) - unicodeGetStrLen(str1));
         if (delta == 0) {
-            new_size = self->length;
+            new_size = unicodeGetStrLen(self);
         } else {
-            product = n * (str2->length - str1->length);
-            if ((product / (str2->length - str1->length)) != n) {
+            product = n * (unicodeGetStrLen(str2) - unicodeGetStrLen(str1));
+            if ((product / (unicodeGetStrLen(str2) - unicodeGetStrLen(str1))) != n) {
                 PyErr_SetString(PyExc_OverflowError,
                                 "replace string is too long");
                 return NULL;
             }
-            new_size = self->length + product;
+            new_size = unicodeGetStrLen(self) + product;
             if (new_size < 0) {
                 PyErr_SetString(PyExc_OverflowError,
                                 "replace string is too long");
@@ -6013,40 +6013,40 @@ PyObject *replace(PyUnicodeObject *self,
         if (!u)
             return NULL;
         i = 0;
-        p = u->str;
-        if (str1->length > 0) {
+        p = unicodeGetWritableStr(u);
+        if (unicodeGetStrLen(str1) > 0) {
             while (n-- > 0) {
                 /* look for next match */
-                j = stringlib_find(self->str+i, self->length-i,
-                                   str1->str, str1->length,
+                j = stringlib_find(unicodeGetWritableStr(self)+i, unicodeGetStrLen(self)-i,
+                                   unicodeGetWritableStr(str1), unicodeGetStrLen(str1),
                                    i);
                 if (j == -1)
                     break;
                 else if (j > i) {
                     /* copy unchanged part [i:j] */
-                    Py_UNICODE_COPY(p, self->str+i, j-i);
+                    Py_UNICODE_COPY(p, unicodeGetWritableStr(self)+i, j-i);
                     p += j - i;
                 }
                 /* copy substitution string */
-                if (str2->length > 0) {
-                    Py_UNICODE_COPY(p, str2->str, str2->length);
-                    p += str2->length;
+                if (unicodeGetStrLen(str2) > 0) {
+                    Py_UNICODE_COPY(p, unicodeGetWritableStr(str2), unicodeGetStrLen(str2));
+                    p += unicodeGetStrLen(str2);
                 }
-                i = j + str1->length;
+                i = j + unicodeGetStrLen(str1);
             }
-            if (i < self->length)
+            if (i < unicodeGetStrLen(self))
                 /* copy tail [i:] */
-                Py_UNICODE_COPY(p, self->str+i, self->length-i);
+                Py_UNICODE_COPY(p, unicodeGetWritableStr(self)+i, unicodeGetStrLen(self)-i);
         } else {
             /* interleave */
             while (n > 0) {
-                Py_UNICODE_COPY(p, str2->str, str2->length);
-                p += str2->length;
+                Py_UNICODE_COPY(p, unicodeGetWritableStr(str2), unicodeGetStrLen(str2));
+                p += unicodeGetStrLen(str2);
                 if (--n <= 0)
                     break;
-                *p++ = self->str[i++];
+                *p++ = unicodeGetWritableStr(self)[i++];
             }
-            Py_UNICODE_COPY(p, self->str+i, self->length-i);
+            Py_UNICODE_COPY(p, unicodeGetWritableStr(self)+i, unicodeGetStrLen(self)-i);
         }
     }
     return (PyObject *) u;
@@ -6057,9 +6057,9 @@ PyObject *replace(PyUnicodeObject *self,
         Py_INCREF(self);
         return (PyObject *) self;
     }
-    return PyUnicode_FromUnicode(self->str, self->length);
+    return PyUnicode_FromUnicode(unicodeGetWritableStr(self), unicodeGetStrLen(self));
 }
-#if 0  /* I'm here! */
+
 /* --- Unicode Object Methods --------------------------------------------- */
 
 PyDoc_STRVAR(title__doc__,
@@ -6167,12 +6167,12 @@ unicode_center(PyUnicodeObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "n|O&:center", &width, convert_uc, &fillchar))
         return NULL;
 
-    if (self->length >= width && PyUnicode_CheckExact(self)) {
+    if (unicodeGetStrLen(self) >= width && PyUnicode_CheckExact(self)) {
         Py_INCREF(self);
         return (PyObject*) self;
     }
 
-    marg = width - self->length;
+    marg = width - unicodeGetStrLen(self);
     left = marg / 2 + (marg & width & 1);
 
     return (PyObject*) pad(self, left, marg - left, fillchar);
@@ -6201,11 +6201,11 @@ unicode_compare(PyUnicodeObject *str1, PyUnicodeObject *str2)
 {
     Py_ssize_t len1, len2;
 
-    Py_UNICODE *s1 = str1->str;
-    Py_UNICODE *s2 = str2->str;
+    Py_UNICODE *s1 = unicodeGetWritableStr(str1);
+    Py_UNICODE *s2 = unicodeGetWritableStr(str2);
 
-    len1 = str1->length;
-    len2 = str2->length;
+    len1 = unicodeGetStrLen(str1);
+    len2 = unicodeGetStrLen(str2);
 
     while (len1 > 0 && len2 > 0) {
         Py_UNICODE c1, c2;
@@ -6235,11 +6235,11 @@ unicode_compare(PyUnicodeObject *str1, PyUnicodeObject *str2)
 {
     register Py_ssize_t len1, len2;
 
-    Py_UNICODE *s1 = str1->str;
-    Py_UNICODE *s2 = str2->str;
+    Py_UNICODE *s1 = unicodeGetWritableStr(str1);
+    Py_UNICODE *s2 = unicodeGetWritableStr(str2);
 
-    len1 = str1->length;
-    len2 = str2->length;
+    len1 = unicodeGetStrLen(str1);
+    len2 = unicodeGetStrLen(str2);
 
     while (len1 > 0 && len2 > 0) {
         Py_UNICODE c1, c2;
@@ -6291,6 +6291,7 @@ int PyUnicode_Compare(PyObject *left,
     return -1;
 }
 
+#if 0 /* Pyston change: need to look at error handling again */
 PyObject *PyUnicode_RichCompare(PyObject *left,
                                 PyObject *right,
                                 int op)
@@ -6366,6 +6367,7 @@ PyObject *PyUnicode_RichCompare(PyObject *left,
     result = (op == Py_NE);
     return PyBool_FromLong(result);
 }
+#endif
 
 int PyUnicode_Contains(PyObject *container,
                        PyObject *element)
@@ -6419,11 +6421,11 @@ PyObject *PyUnicode_Concat(PyObject *left,
     }
 
     /* Concat the two Unicode strings */
-    w = _PyUnicode_New(u->length + v->length);
+    w = _PyUnicode_New(unicodeGetStrLen(u) + unicodeGetStrLen(v));
     if (w == NULL)
         goto onError;
-    Py_UNICODE_COPY(w->str, u->str, u->length);
-    Py_UNICODE_COPY(w->str + u->length, v->str, v->length);
+    Py_UNICODE_COPY(unicodeGetWritableStr(w), unicodeGetWritableStr(u), unicodeGetStrLen(u));
+    Py_UNICODE_COPY(unicodeGetWritableStr(w) + unicodeGetStrLen(u), unicodeGetWritableStr(v), unicodeGetStrLen(v));
 
     Py_DECREF(u);
     Py_DECREF(v);
@@ -6454,10 +6456,10 @@ unicode_count(PyUnicodeObject *self, PyObject *args)
                                             &start, &end))
         return NULL;
 
-    ADJUST_INDICES(start, end, self->length);
+    ADJUST_INDICES(start, end, unicodeGetStrLen(self));
     result = PyInt_FromSsize_t(
-        stringlib_count(self->str + start, end - start,
-                        substring->str, substring->length,
+        stringlib_count(unicodeGetWritableStr(self) + start, end - start,
+                        unicodeGetWritableStr(substring), unicodeGetStrLen(substring),
                         PY_SSIZE_T_MAX)
         );
 
@@ -6565,8 +6567,8 @@ unicode_expandtabs(PyUnicodeObject *self, PyObject *args)
     /* First pass: determine size of output string */
     i = 0; /* chars up to and including most recent \n or \r */
     j = 0; /* chars since most recent \n or \r (use in tab calculations) */
-    e = self->str + self->length; /* end of input */
-    for (p = self->str; p < e; p++)
+    e = unicodeGetWritableStr(self) + unicodeGetStrLen(self); /* end of input */
+    for (p = unicodeGetWritableStr(self); p < e; p++)
         if (*p == '\t') {
             if (tabsize > 0) {
                 incr = tabsize - (j % tabsize); /* cannot overflow */
@@ -6596,10 +6598,10 @@ unicode_expandtabs(PyUnicodeObject *self, PyObject *args)
         return NULL;
 
     j = 0; /* same as in first pass */
-    q = u->str; /* next output char */
-    qe = u->str + u->length; /* end of output */
+    q = unicodeGetWritableStr(u); /* next output char */
+    qe = unicodeGetWritableStr(u) + unicodeGetStrLen(u); /* end of output */
 
-    for (p = self->str; p < e; p++)
+    for (p = unicodeGetWritableStr(self); p < e; p++)
         if (*p == '\t') {
             if (tabsize > 0) {
                 i = tabsize - (j % tabsize);
@@ -6664,14 +6666,23 @@ unicode_find(PyUnicodeObject *self, PyObject *args)
 static PyObject *
 unicode_getitem(PyUnicodeObject *self, Py_ssize_t index)
 {
-    if (index < 0 || index >= self->length) {
+    if (index < 0 || index >= unicodeGetStrLen(self)) {
         PyErr_SetString(PyExc_IndexError, "string index out of range");
         return NULL;
     }
 
-    return (PyObject*) PyUnicode_FromUnicode(&self->str[index], 1);
+    return (PyObject*) PyUnicode_FromUnicode(&unicodeGetWritableStr(self)[index], 1);
 }
 
+
+/* XXX TODO Need to hook replace this with Pyston hashing. */
+static long
+unicode_hash(PyUnicodeObject *self)
+{
+    return 0;
+}
+
+#if 0
 static long
 unicode_hash(PyUnicodeObject *self)
 {
@@ -6711,6 +6722,7 @@ unicode_hash(PyUnicodeObject *self)
     self->hash = x;
     return x;
 }
+#endif
 
 PyDoc_STRVAR(index__doc__,
              "S.index(sub [,start [,end]]) -> int\n\
@@ -7047,10 +7059,11 @@ unicode_join(PyObject *self, PyObject *data)
     return PyUnicode_Join(self, data);
 }
 
+/* XXX TODO Move this out of this module (but leave commented version from CPython, and rename unicodeGetStrLen to this */
 static Py_ssize_t
 unicode_length(PyUnicodeObject *self)
 {
-    return self->length;
+    return unicodeGetStrLen(self);
 }
 
 PyDoc_STRVAR(ljust__doc__,
@@ -7068,12 +7081,12 @@ unicode_ljust(PyUnicodeObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "n|O&:ljust", &width, convert_uc, &fillchar))
         return NULL;
 
-    if (self->length >= width && PyUnicode_CheckExact(self)) {
+    if (unicodeGetStrLen(self) >= width && PyUnicode_CheckExact(self)) {
         Py_INCREF(self);
         return (PyObject*) self;
     }
 
-    return (PyObject*) pad(self, 0, width - self->length, fillchar);
+    return (PyObject*) pad(self, 0, width - unicodeGetStrLen(self), fillchar);
 }
 
 PyDoc_STRVAR(lower__doc__,
@@ -7266,8 +7279,8 @@ unicode_repeat(PyUnicodeObject *str, Py_ssize_t len)
     /* ensure # of chars needed doesn't overflow int and # of bytes
      * needed doesn't overflow size_t
      */
-    nchars = len * str->length;
-    if (len && nchars / len != str->length) {
+    nchars = len * unicodeGetStrLen(str);
+    if (len && nchars / len != unicodeGetStrLen(str)) {
         PyErr_SetString(PyExc_OverflowError,
                         "repeated string is too long");
         return NULL;
@@ -7282,15 +7295,15 @@ unicode_repeat(PyUnicodeObject *str, Py_ssize_t len)
     if (!u)
         return NULL;
 
-    p = u->str;
+    p = unicodeGetWritableStr(u);
 
-    if (str->length == 1 && len > 0) {
-        Py_UNICODE_FILL(p, str->str[0], len);
+    if (unicodeGetStrLen(str) == 1 && len > 0) {
+        Py_UNICODE_FILL(p, unicodeGetWritableStr(str)[0], len);
     } else {
         Py_ssize_t done = 0; /* number of characters copied this far */
         if (done < nchars) {
-            Py_UNICODE_COPY(p, str->str, str->length);
-            done = str->length;
+            Py_UNICODE_COPY(p, unicodeGetWritableStr(str), unicodeGetStrLen(str));
+            done = unicodeGetStrLen(str);
         }
         while (done < nchars) {
             Py_ssize_t n = (done <= nchars-done) ? done : nchars-done;
@@ -7456,12 +7469,12 @@ unicode_rjust(PyUnicodeObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "n|O&:rjust", &width, convert_uc, &fillchar))
         return NULL;
 
-    if (self->length >= width && PyUnicode_CheckExact(self)) {
+    if (unicodeGetStrLen(self) >= width && PyUnicode_CheckExact(self)) {
         Py_INCREF(self);
         return (PyObject*) self;
     }
 
-    return (PyObject*) pad(self, width - self->length, 0, fillchar);
+    return (PyObject*) pad(self, width - unicodeGetStrLen(self), 0, fillchar);
 }
 
 static PyObject*
@@ -7472,9 +7485,9 @@ unicode_slice(PyUnicodeObject *self, Py_ssize_t start, Py_ssize_t end)
         start = 0;
     if (end < 0)
         end = 0;
-    if (end > self->length)
-        end = self->length;
-    if (start == 0 && end == self->length && PyUnicode_CheckExact(self)) {
+    if (end > unicodeGetStrLen(self))
+        end = unicodeGetStrLen(self);
+    if (start == 0 && end == unicodeGetStrLen(self) && PyUnicode_CheckExact(self)) {
         /* full slice, return original string */
         Py_INCREF(self);
         return (PyObject*) self;
@@ -7482,10 +7495,11 @@ unicode_slice(PyUnicodeObject *self, Py_ssize_t start, Py_ssize_t end)
     if (start > end)
         start = end;
     /* copy slice */
-    return (PyObject*) PyUnicode_FromUnicode(self->str + start,
+    return (PyObject*) PyUnicode_FromUnicode(unicodeGetWritableStr(self) + start,
                                              end - start);
 }
 
+#if 0 /* XXX TODO some trouble with split macro */
 PyObject *PyUnicode_Split(PyObject *s,
                           PyObject *sep,
                           Py_ssize_t maxsplit)
@@ -7509,6 +7523,7 @@ PyObject *PyUnicode_Split(PyObject *s,
     Py_XDECREF(sep);
     return result;
 }
+
 
 PyDoc_STRVAR(split__doc__,
              "S.split([sep [,maxsplit]]) -> list of strings\n\
@@ -7684,6 +7699,8 @@ unicode_splitlines(PyUnicodeObject *self, PyObject *args)
 
     return PyUnicode_Splitlines((PyObject *)self, keepends);
 }
+#endif
+
 
 static
 PyObject *unicode_str(PyUnicodeObject *self)
@@ -7715,8 +7732,8 @@ are deleted.");
 static PyObject*
 unicode_translate(PyUnicodeObject *self, PyObject *table)
 {
-    return PyUnicode_TranslateCharmap(self->str,
-                                      self->length,
+    return PyUnicode_TranslateCharmap(unicodeGetWritableStr(self),
+                                      unicodeGetStrLen(self),
                                       table,
                                       "ignore");
 }
@@ -7748,7 +7765,7 @@ unicode_zfill(PyUnicodeObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "n:zfill", &width))
         return NULL;
 
-    if (self->length >= width) {
+    if (unicodeGetStrLen(self) >= width) {
         if (PyUnicode_CheckExact(self)) {
             Py_INCREF(self);
             return (PyObject*) self;
@@ -7760,17 +7777,17 @@ unicode_zfill(PyUnicodeObject *self, PyObject *args)
                 );
     }
 
-    fill = width - self->length;
+    fill = width - unicodeGetStrLen(self);
 
     u = pad(self, fill, 0, '0');
 
     if (u == NULL)
         return NULL;
 
-    if (u->str[fill] == '+' || u->str[fill] == '-') {
+    if (unicodeGetWritableStr(u)[fill] == '+' || unicodeGetWritableStr(u)[fill] == '-') {
         /* move sign to beginning of string */
-        u->str[0] = u->str[fill];
-        u->str[fill] = '0';
+        unicodeGetWritableStr(u)[0] = unicodeGetWritableStr(u)[fill];
+        unicodeGetWritableStr(u)[fill] = '0';
     }
 
     return (PyObject*) u;
@@ -7882,7 +7899,9 @@ unicode_endswith(PyUnicodeObject *self,
 
 
 /* Implements do_string_format, which is unicode because of stringlib */
-#include "stringlib/string_format.h"
+/* #include "stringlib/string_format.h" */
+/* Pyston change: replace include by forward declaration since do_string_format is not static anymore */
+extern PyObject *do_string_format(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyDoc_STRVAR(format__doc__,
              "S.format(*args, **kwargs) -> unicode\n\
@@ -7928,7 +7947,7 @@ static PyObject *
 unicode__sizeof__(PyUnicodeObject *v)
 {
     return PyInt_FromSsize_t(sizeof(PyUnicodeObject) +
-                             sizeof(Py_UNICODE) * (v->length + 1));
+                             sizeof(Py_UNICODE) * (unicodeGetStrLen(v) + 1));
 }
 
 PyDoc_STRVAR(sizeof__doc__,
@@ -7939,10 +7958,10 @@ PyDoc_STRVAR(sizeof__doc__,
 static PyObject *
 unicode_getnewargs(PyUnicodeObject *v)
 {
-    return Py_BuildValue("(u#)", v->str, v->length);
+    return Py_BuildValue("(u#)", unicodeGetWritableStr(v), unicodeGetStrLen(v));
 }
 
-
+#if 0  /* XXX Need to tackle those PyList problems, so that this can be defined */
 static PyMethodDef unicode_methods[] = {
     {"encode", (PyCFunction) unicode_encode, METH_VARARGS | METH_KEYWORDS, encode__doc__},
     {"replace", (PyCFunction) unicode_replace, METH_VARARGS, replace__doc__},
@@ -8001,6 +8020,7 @@ static PyMethodDef unicode_methods[] = {
     {"__getnewargs__",  (PyCFunction)unicode_getnewargs, METH_NOARGS},
     {NULL, NULL}
 };
+#endif
 
 static PyObject *
 unicode_mod(PyObject *v, PyObject *w)
@@ -8054,12 +8074,12 @@ unicode_subscript(PyUnicodeObject* self, PyObject* item)
 
         if (slicelength <= 0) {
             return PyUnicode_FromUnicode(NULL, 0);
-        } else if (start == 0 && step == 1 && slicelength == self->length &&
+        } else if (start == 0 && step == 1 && slicelength == unicodeGetStrLen(self) &&
                    PyUnicode_CheckExact(self)) {
             Py_INCREF(self);
             return (PyObject *)self;
         } else if (step == 1) {
-            return PyUnicode_FromUnicode(self->str + start, slicelength);
+            return PyUnicode_FromUnicode(unicodeGetWritableStr(self) + start, slicelength);
         } else {
             source_buf = PyUnicode_AS_UNICODE((PyObject*)self);
             result_buf = (Py_UNICODE *)PyObject_MALLOC(slicelength*
@@ -8098,7 +8118,7 @@ unicode_buffer_getreadbuf(PyUnicodeObject *self,
                         "accessing non-existent unicode segment");
         return -1;
     }
-    *ptr = (void *) self->str;
+    *ptr = (void *) unicodeGetWritableStr(self);
     return PyUnicode_GET_DATA_SIZE(self);
 }
 
@@ -8221,7 +8241,10 @@ formatlong(PyObject *val, int flags, int prec, int type)
     PyObject *str; /* temporary string object. */
     PyUnicodeObject *result;
 
-    str = _PyString_FormatLong(val, flags, prec, type, &buf, &len);
+    /* Pyston change: added the explicit const char ** cast to comply
+     * with Pyston's signature for _PyString_FormatLong. This may not
+     * be a good idea... */
+    str = _PyString_FormatLong(val, flags, prec, type, (const char **)&buf, &len);
     if (!str)
         return NULL;
     result = _PyUnicode_New(len);
@@ -8230,8 +8253,8 @@ formatlong(PyObject *val, int flags, int prec, int type)
         return NULL;
     }
     for (i = 0; i < len; i++)
-        result->str[i] = buf[i];
-    result->str[len] = 0;
+        unicodeGetWritableStr(result)[i] = buf[i];
+    unicodeGetWritableStr(result)[len] = 0;
     Py_DECREF(str);
     return (PyObject*)result;
 }
@@ -8855,6 +8878,7 @@ static PyBufferProcs unicode_as_buffer = {
     (charbufferproc) unicode_buffer_getcharbuf,
 };
 
+#if 0 /* XXX TODO: restore this to python version */
 static PyObject *
 unicode_subtype_new(PyTypeObject *type, PyObject *args, PyObject *kwds);
 
@@ -8890,24 +8914,27 @@ unicode_subtype_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     if (tmp == NULL)
         return NULL;
     assert(PyUnicode_Check(tmp));
-    pnew = (PyUnicodeObject *) type->tp_alloc(type, n = tmp->length);
+    pnew = (PyUnicodeObject *) type->tp_alloc(type, n = unicodeGetStrLen(tmp));
     if (pnew == NULL) {
         Py_DECREF(tmp);
         return NULL;
     }
-    pnew->str = (Py_UNICODE*) PyObject_MALLOC(sizeof(Py_UNICODE) * (n+1));
-    if (pnew->str == NULL) {
+    unicodeGetWritableStr(pnew) = (Py_UNICODE*) PyObject_MALLOC(sizeof(Py_UNICODE) * (n+1));
+    if (unicodeGetWritableStr(pnew) == NULL) {
         _Py_ForgetReference((PyObject *)pnew);
         PyObject_Del(pnew);
         Py_DECREF(tmp);
         return PyErr_NoMemory();
     }
-    Py_UNICODE_COPY(pnew->str, tmp->str, n+1);
-    pnew->length = n;
+    Py_UNICODE_COPY(unicodeGetWritableStr(pnew), unicodeGetWritableStr(tmp), n+1);
+    unicodeGetStrLen(pnew) = n;  /* XXXX Fix this one */
     pnew->hash = tmp->hash;
     Py_DECREF(tmp);
     return (PyObject *)pnew;
 }
+#endif
+
+#if 0 /* XXX TODO missing methods */
 
 PyDoc_STRVAR(unicode_doc,
              "unicode(object='') -> unicode object\n\
@@ -8960,7 +8987,9 @@ PyTypeObject PyUnicode_Type = {
     unicode_new,            /* tp_new */
     PyObject_Del,           /* tp_free */
 };
+#endif
 
+#if 0  /* XXX TODO missing method */
 /* Initialize the Unicode implementation */
 
 void _PyUnicode_Init(void)
@@ -9035,8 +9064,8 @@ _PyUnicode_Fini(void)
 
     (void)PyUnicode_ClearFreeList();
 }
+#endif
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* if 0 */

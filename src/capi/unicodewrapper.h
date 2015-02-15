@@ -16,6 +16,10 @@ int Py_UNICODE_MATCH(PyUnicodeObject *string, Py_ssize_t offset, PyUnicodeObject
 PyUnicodeObject *_PyUnicode_New(Py_ssize_t length);
 int _PyUnicode_Resize(PyUnicodeObject **unicode, Py_ssize_t length);
 
+PyObject *PyUnicode_AsDecodedObject(PyObject *unicode,
+                                    const char *encoding,
+                                    const char *errors);
+
 int unicode_decode_call_errorhandler(const char *errors, PyObject **errorHandler,
                                      const char *encoding, const char *reason,
                                      const char *input, Py_ssize_t insize, Py_ssize_t *startinpos,

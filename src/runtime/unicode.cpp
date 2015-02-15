@@ -53,18 +53,6 @@ extern "C" int PyUnicode_ClearFreeList() noexcept {
     Py_FatalError("unimplemented");
 }
 
-// extern "C" PyObject* PyUnicode_FromUnicode(const Py_UNICODE* u, Py_ssize_t size) noexcept {
-//     Py_FatalError("unimplemented");
-// }
-
-// extern "C" PyObject* PyUnicode_FromStringAndSize(const char* u, Py_ssize_t size) noexcept {
-//     Py_FatalError("unimplemented");
-// }
-
-// extern "C" PyObject* PyUnicode_FromString(const char* u) noexcept {
-//     Py_FatalError("unimplemented");
-// }
-
 extern "C" PyObject* PyUnicode_FromFormat(const char* format, ...) noexcept {
     Py_FatalError("unimplemented");
 }
@@ -326,6 +314,13 @@ extern "C" PyObject* _PyUnicode_AsDefaultEncodedString(PyObject*, const char*) n
     Py_FatalError("unimplemented");
 }
 
+// This should get implemented in unicodeobject.c itself!
+extern "C" PyObject *PyUnicode_AsDecodedObject(PyObject *unicode,
+                                               const char *encoding,
+                                               const char *errors) {
+    Py_FatalError("unimplemented");
+}
+
 extern "C" void _PyUnicode_Fini() noexcept {
     Py_FatalError("unimplemented");
 }
@@ -393,6 +388,13 @@ extern "C" Py_UNICODE _PyUnicode_ToTitlecase(Py_UNICODE ch) noexcept {
 extern "C" Py_UNICODE _PyUnicode_ToUppercase(Py_UNICODE ch) noexcept {
     Py_FatalError("unimplemented");
 }
+
+extern "C" PyObject * _PyUnicode_FormatAdvanced(PyObject *obj,
+                                                Py_UNICODE *format_spec,
+                                                Py_ssize_t format_spec_len) {
+    Py_FatalError("unimplemented");
+}
+
 
 void setupUnicode() {
     unicode_cls->freeze();
