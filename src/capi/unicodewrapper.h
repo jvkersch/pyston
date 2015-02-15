@@ -6,8 +6,9 @@
 extern "C" {
 #endif
 
+Py_ssize_t unicode_length(PyUnicodeObject* self);
+
 void unicodeSetChr(PyUnicodeObject *obj, int pos, Py_UNICODE chr);
-int unicodeGetStrLen(PyUnicodeObject *obj);
 Py_UNICODE* unicodeGetWritableStr(PyUnicodeObject *obj);
 
 int Py_UNICODE_MATCH(PyUnicodeObject *string, Py_ssize_t offset, PyUnicodeObject *substring);

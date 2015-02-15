@@ -7,9 +7,9 @@ extern "C" void unicodeSetChr(PyUnicodeObject *obj, int pos, Py_UNICODE chr)
     obj->str[pos] = chr;
 }
 
-extern "C" int unicodeGetStrLen(PyUnicodeObject *obj)
+extern Py_ssize_t unicode_length(PyUnicodeObject *self)
 {
-    return obj->str.size();
+    return self->str.size();
 }
 
 extern "C" Py_UNICODE* unicodeGetWritableStr(PyUnicodeObject *obj)
@@ -17,11 +17,6 @@ extern "C" Py_UNICODE* unicodeGetWritableStr(PyUnicodeObject *obj)
     // See str.cpp for why this works...
     return &obj->str[0];
 }
-
-// extern "C" void Py_UNICODE_COPY(PyUnicodeObject* target, const Py_UNICODE* source, int length)
-// {
-//     Py_FatalError("unimplemented");
-// }
 
 extern "C" int Py_UNICODE_MATCH(PyUnicodeObject *string, Py_ssize_t offset, PyUnicodeObject *substring)
 {
